@@ -12,15 +12,17 @@ const Header = () => {
 
   return (
     <header
-      className={cn("w-full border-b duration-150 transition-all ease-in-out bg-transparent absolute z-10")}
+      className={cn(
+        "w-full  duration-150 transition-all ease-in-out bg-white/20 backdrop-blur-lg backdrop-saturate-150 absolute z-10"
+      )}
     >
       <Container>
         <div className="flex items-center gap-4 w-full">
           {/* logo section */}
           <LogoContainer />
-
+  
           {/* navigation section */}
-          <nav className="hidden md:flex items-center gap-3">
+          <nav className="hidden md:flex no-underline  items-start  gap-6">
             <NavigationRoutes />
             {userId && (
               <NavLink
@@ -36,11 +38,11 @@ const Header = () => {
               </NavLink>
             )}
           </nav>
-
+  
           <div className="ml-auto flex items-center gap-6">
             {/* profile section */}
             <ProfileContainer />
-
+  
             {/* mobile toggle section */}
             <ToggleContainer />
           </div>
@@ -48,6 +50,7 @@ const Header = () => {
       </Container>
     </header>
   );
+  
 };
 
 export default Header;

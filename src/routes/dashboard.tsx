@@ -50,7 +50,7 @@ const Dashboard = () => {
 
   return (
     <>
-      <div className="flex w-full items-center mt-6 justify-between">
+      <div className="flex w-full mt-6 justify-between">
         {/* headings */}
         <Headings
           title="Dashboard"

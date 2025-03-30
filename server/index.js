@@ -49,7 +49,9 @@ app.post('/api/analyze', upload.single('resume'), async (req, res) => {
       Resume:
       "${resumeText}"
 
-      Job Description:
+      Job Description:(make sure it is relavent i mean check the jdText that is is somehow related with the resume
+      if not then check the resume all 4 details and also return message as unreleevnt and given text other wise only that strength and 
+      mistakes suggestion and Ats Score only)
       "${jdText}"
 
       Return the output strictly in this JSON format:
@@ -58,6 +60,10 @@ app.post('/api/analyze', upload.single('resume'), async (req, res) => {
         "mistakes": ["Point 1", "Point 2"],
         "suggestions": ["Point 1", "Point 2"],
         "ats_score": "XX%"
+        if(unrelevent){
+          than add a key here
+          "message":"unrelevent text ${jdText}"
+        }
       }
     `;
 

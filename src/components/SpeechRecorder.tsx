@@ -2,6 +2,35 @@ import { useState, useRef } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css"; // Bootstrap Icons
+import { motion } from "motion/react"
+
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
+
+interface SpeechRecognitionEvent {
+  results: {
+    length: number;
+    [index: number]: {
+      [index: number]: {
+        transcript: string;
+      };
+    };
+  };
+}
+
+interface SpeechRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: { error: string }) => void;
+  start: () => void;
+  stop: () => void;
+}
 
 const SpeechRecorder = () => {
   const [text, setText] = useState("");
@@ -30,7 +59,7 @@ const SpeechRecorder = () => {
       setText(transcript.trim());
     };
 
-    recognition.onerror = (event) => {
+    recognition.onerror = (event: { error: string }) => {
       console.error("Speech Recognition Error:", event.error);
     };
 
@@ -65,10 +94,10 @@ const SpeechRecorder = () => {
   };
 
   return (
-    <div className="container mt-20 d-flex flex-column align-items-center min-vh-100 justify-content-center bg-light">
+    <div className="container mt-36 mb-20 d-flex flex-column align-items-center min-vh-100 justify-content-center bg-white/30 backdrop-blur-lg shadow-xl rounded-2xl border border-white/20 p-8">
       {/* Hero Section */}
       <div className="text-center mb-4">
-        <h1 className="display-5 fw-bold text-primary">
+        <h1 className="display-5 -mt-30 fw-bold text-black">
           <i className="bi bi-mic"></i> Speech Analyzer
         </h1>
         <p className="lead text-muted">
@@ -79,7 +108,7 @@ const SpeechRecorder = () => {
       {/* Buttons */}
       <div className="d-flex gap-3 mb-4">
         <button
-          className={`btn btn-lg ${isRecording ? "btn-danger" : "btn-primary"} rounded-pill`}
+          className={`btn btn-lg opacity-70 ${isRecording ? "btn-danger" : "btn-primary"} rounded-pill`}
           onClick={isRecording ? stopRecording : startRecording}
         >
           <i className={`bi ${isRecording ? "bi-stop-circle" : "bi-mic"}`}></i>
@@ -103,8 +132,19 @@ const SpeechRecorder = () => {
       )}
 
       {/* Live Transcription */}
-      <div className="card shadow-lg mb-4 w-75">
-        <div className="card-header bg-primary text-white">
+      <motion.div
+        animate={{
+          y: [0, -10, 10, 0], // Moves up and down continuously
+        }}
+        transition={{
+          duration: 3, // Total time for one cycle
+          repeat: Infinity,
+          ease: "linear", // Ensures constant speed
+        }}
+
+        className="card shadow-lg mb-4 mt-7 w-75 rounded-full"
+      >
+        <div className="card-header bg-gradient-to-b from-[#6babff] to-[#08499dbe] opacity-70 text-white">
           <h5 className="mb-0">
             <i className="bi bi-text-paragraph"></i> Live Transcription
           </h5>
@@ -118,12 +158,12 @@ const SpeechRecorder = () => {
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Analysis Result */}
       {analysis && analysis.jsonData && (
         <div className="card shadow-lg border-success w-75">
-          <div className="card-header bg-success text-white">
+          <div className="card-header bg-success opacity-70 text-white">
             <h5 className="mb-0">
               <i className="bi bi-clipboard-data"></i> Analysis Results
             </h5>

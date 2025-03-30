@@ -13,17 +13,17 @@ const HomePage = () => {
 
   return (
     <>
-      <AnimatePresence>
+      <AnimatePresence >
         {loader && (
           <motion.div
-            initial={{ scale: 0, opacity: 0 }}
+            initial={{ scale: 1, opacity: 1 }}
             animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
+            exit={{ scale: 2, opacity: 0 }}
             transition={{ duration: 1, ease: "easeInOut" }}
             className="fixed inset-0 z-50"
           >
             <DotLottiePlayer
-              src="../"
+              src="/assets/svg/home loader.lottie"
               autoplay
               loop
               style={{
