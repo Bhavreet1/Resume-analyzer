@@ -3,6 +3,8 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css"; // Bootstrap Icons
 import { motion } from "motion/react"
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 declare global {
   interface Window {
@@ -37,6 +39,7 @@ const SpeechRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [analysis, setAnalysis] = useState<any>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const startRecording = () => {
     const SpeechRecognition =
@@ -77,24 +80,32 @@ const SpeechRecorder = () => {
 
   const analyzeSpeech = async () => {
     if (!text.trim()) {
-      alert("❌ No speech detected. Please record first.");
+      toast.error("❌ No speech detected. Please record first.");
       return;
     }
 
     try {
+      toast.info("Analyzing your speech...");
       const res = await axios.post("http://localhost:5003/api/analyzeVoice", {
         speechText: text,
       });
-      // Assuming the response is in the format: { jsonData: { confidence_level: [...], improvements: [...], Accuracy_level: value } }
       setAnalysis(res.data);
+      toast.success("✅ Analysis completed successfully!");
+      
+      // Scroll to results after a short delay
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 500);
     } catch (error) {
       console.error("❌ Error in speech analysis:", error);
+      toast.error("❌ Analysis failed. Please try again!");
       setAnalysis({ jsonData: { confidence_level: [], improvements: [], Accuracy_level: "N/A" } });
     }
   };
 
   return (
     <div className="container mt-36 mb-20 d-flex flex-column align-items-center min-vh-100 justify-content-center bg-white/30 backdrop-blur-lg shadow-xl rounded-2xl border border-white/20 p-8">
+      <ToastContainer position="top-right" />
       {/* Hero Section */}
       <div className="text-center mb-4">
         <h1 className="display-5 -mt-30 fw-bold text-black">
@@ -162,7 +173,13 @@ const SpeechRecorder = () => {
 
       {/* Analysis Result */}
       {analysis && analysis.jsonData && (
-        <div className="card shadow-lg border-success w-75">
+        <motion.div 
+          ref={resultsRef}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="card shadow-lg border-success w-75"
+        >
           <div className="card-header bg-success opacity-70 text-white">
             <h5 className="mb-0">
               <i className="bi bi-clipboard-data"></i> Analysis Results
@@ -190,7 +207,7 @@ const SpeechRecorder = () => {
               <p>{analysis.jsonData.Accuracy_level}</p>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Footer */}

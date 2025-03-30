@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import axios from "axios";
 import styled from 'styled-components';
 import { ToastContainer, toast } from "react-toastify";
@@ -18,6 +18,7 @@ const ResumeAnalyzer: React.FC = () => {
   const [jdText, setJdText] = useState<string>("");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const handleFileUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,6 +44,11 @@ const ResumeAnalyzer: React.FC = () => {
       return;
     }
 
+    if (!jdText.trim()) {
+      toast.error("Please enter a job description!");
+      return;
+    }
+
     const allowedExtensions = ["pdf", "docx"];
     const fileExtension = resume.name.split(".").pop()?.toLowerCase();
 
@@ -52,8 +58,14 @@ const ResumeAnalyzer: React.FC = () => {
     }
 
     setLoading(true);
+    toast.info("🔍 Analyzing your resume...", {
+      autoClose: false,
+      closeOnClick: false,
+      draggable: false
+    });
+
     const formData = new FormData();
-      formData.append("resume", resume);
+    formData.append("resume", resume);
     formData.append("jdText", jdText);
 
     try {
@@ -65,11 +77,26 @@ const ResumeAnalyzer: React.FC = () => {
         }
       );
       
+      toast.dismiss(); // Dismiss the analyzing toast
       setAnalysis(response.data);
-      toast.success("Resume analyzed successfully!");
+      toast.success("✅ Resume analyzed successfully!");
+      
+      // Scroll halfway to results after a short delay
+      setTimeout(() => {
+        const element = resultsRef.current;
+        if (element) {
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - window.innerHeight / 2;
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+          });
+        }
+      }, 500);
     } catch (error) {
       console.error(error);
-      toast.error("Analysis failed. Please try again!");
+      toast.dismiss(); // Dismiss the analyzing toast
+      toast.error("❌ Analysis failed. Please try again!");
     } finally {
       setLoading(false);
     }
@@ -78,51 +105,54 @@ const ResumeAnalyzer: React.FC = () => {
   const renderAnalysisSection = useMemo(() => {
     if (!analysis) return null;
 
-  return (
-      <div className="w-1/2 space-y-4">
-         {
-            analysis.message &&(
-              <div className="bg-white p-4 shadow-md rounded-lg">
-                <h2 className="text-xl font-semibold mb-2">Message</h2>
-                <p>{analysis.message}</p>
-          </div>
-            )
-          }
+    return (
+      <motion.div 
+        ref={resultsRef}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-1/2 space-y-4"
+      >
+        {
+          analysis.message &&(
             <div className="bg-white p-4 shadow-md rounded-lg">
-              <h2 className="text-xl font-semibold mb-2">ATS Score</h2>
-              <h2>{analysis.ats_score}</h2>
+              <h2 className="text-xl font-semibold mb-2">Message</h2>
+              <p>{analysis.message}</p>
             </div>
-
-            <div className="bg-white p-4 shadow-md rounded-lg">
-              <h2 className="text-xl font-semibold mb-2">Strengths</h2>
-              <ul className="list-disc list-inside text-gray-700">
-                {analysis.strengths.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-white p-4 shadow-md rounded-lg">
-              <h2 className="text-xl font-semibold mb-2">Mistakes</h2>
-              <ul className="list-disc list-inside text-gray-700">
-                {analysis.mistakes.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-white p-4 shadow-md rounded-lg">
-              <h2 className="text-xl font-semibold mb-2">Suggestions</h2>
-              <ul className="list-disc list-inside text-gray-700">
-                {analysis.suggestions.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
-            </div>
-        <div>
-
+          )
+        }
+        <div className="bg-white p-4 shadow-md rounded-lg">
+          <h2 className="text-xl font-semibold mb-2">ATS Score</h2>
+          <h2>{analysis.ats_score}</h2>
         </div>
-      </div>
+
+        <div className="bg-white p-4 shadow-md rounded-lg">
+          <h2 className="text-xl font-semibold mb-2">Strengths</h2>
+          <ul className="list-disc list-inside text-gray-700">
+            {analysis.strengths.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="bg-white p-4 shadow-md rounded-lg">
+          <h2 className="text-xl font-semibold mb-2">Mistakes</h2>
+          <ul className="list-disc list-inside text-gray-700">
+            {analysis.mistakes.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="bg-white p-4 shadow-md rounded-lg">
+          <h2 className="text-xl font-semibold mb-2">Suggestions</h2>
+          <ul className="list-disc list-inside text-gray-700">
+            {analysis.suggestions.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </motion.div>
     );
   }, [analysis]);
 
